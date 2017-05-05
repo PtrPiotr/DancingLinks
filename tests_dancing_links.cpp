@@ -59,24 +59,23 @@ protected:
         dl = nullptr;
     }
 
-    DancingLinks::DLSolver *populated(const std::vector<B7> &data) {
+    void PopulateDl(const std::vector<B7> &data) {
         dl = new DancingLinks::DLSolver(data.size(), COLS);
 
         for (unsigned r = 0; r < data.size(); r++) {
             for (unsigned c = 0; c < COLS; c++) {
                 if (data[r][c]) {
-                    dl->add(r, c);
+                    dl->Add(r, c);
                 }
             }
         }
-        return dl;
     }
 };
 
 TEST_F(TestDancingLinks, AllRowsCoverDistinctColumnsWhenRunOnSimpleExample) {
-    DancingLinks::DLSolver *dl = populated(hardcoded1);
+    PopulateDl(hardcoded1);
 
-    auto solution = dl->solve();
+    auto solution = dl->Solve();
     auto cols = B7();
 
     for (auto row: solution) {
@@ -87,9 +86,9 @@ TEST_F(TestDancingLinks, AllRowsCoverDistinctColumnsWhenRunOnSimpleExample) {
 }
 
 TEST_F(TestDancingLinks, AllColumnsCoveredWhenRunOnSimpleExample) {
-    DancingLinks::DLSolver *dl = populated(hardcoded1);
+    PopulateDl(hardcoded1);
 
-    auto solution = dl->solve();
+    auto solution = dl->Solve();
     auto cols = B7();
 
     for (auto row: solution) {
@@ -100,14 +99,14 @@ TEST_F(TestDancingLinks, AllColumnsCoveredWhenRunOnSimpleExample) {
 }
 
 TEST_F(TestDancingLinks, EmptySolutionWhenCantCoverColumn) {
-    DancingLinks::DLSolver *dl = populated(impossible_column_3);
-    auto solution = dl->solve();
+    PopulateDl(impossible_column_3);
+    auto solution = dl->Solve();
     EXPECT_EQ(solution.size(), 0);
 }
 
 TEST_F(TestDancingLinks, EmptySolutionWhenAllRowsInConflict) {
-    DancingLinks::DLSolver *dl = populated(no_feasible_subset);
-    auto solution = dl->solve();
+    PopulateDl(no_feasible_subset);
+    auto solution = dl->Solve();
     EXPECT_EQ(solution.size(), 0);
 }
 
@@ -118,12 +117,12 @@ TEST_F(TestDancingLinks, CorrectAnswerWhenMoreRowsDeclaredThanUsed) {
     for (unsigned r = 0; r < hardcoded1.size(); r++) {
         for (unsigned c = 0; c < COLS; c++) {
             if (hardcoded1[r][c]) {
-                dl->add(r, c);
+                dl->Add(r, c);
             }
         }
     }
 
-    auto solution = dl->solve();
+    auto solution = dl->Solve();
     auto cols = B7();
 
     for (auto row: solution) {

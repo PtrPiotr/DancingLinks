@@ -14,15 +14,15 @@ class TestListMatrix : public ::testing::Test {
  protected:
   // DLSolver *dl;
   static const unsigned N = 10;
-  El *els[N];
+  Element *els[N];
   std::set<int> visited;
 
   virtual void SetUp() {
-    els[0] = new El(0, 0);
+    els[0] = new Element(0, 0);
 
     for (unsigned i = 1; i < N; i++) {
-      els[i] = new El(i, 0);
-      Manipulator<Vertical>::insert(els[0], els[i]);
+      els[i] = new Element(i, 0);
+      Manipulator<Vertical>::Insert(els[0], els[i]);
     }
 
   }
@@ -36,30 +36,30 @@ class TestListMatrix : public ::testing::Test {
   }
 
   template<typename T>
-  void visit_with_iter(Iter<T> &it) {
+  void VisitWithIter(Iter<T> it) {
     for (; *it; ++it) {
       visited.insert((*it)->rowId);
     }
   }
 
   template<typename T>
-  void expect_counts_after_iteration(T &it, unsigned expected_size) {
-    visit_with_iter(it);
+  void ExpectCountsAfterIteration(T it, unsigned expected_size) {
+    VisitWithIter(it);
     EXPECT_EQ(visited.size(), expected_size);
   }
 
   template<typename T>
-  void expect_counts_after_iteration_without(T &it, unsigned expected_size, int without) {
-    expect_counts_after_iteration(it, expected_size);
+  void ExpectCountsAfterIterationWithout(T it, unsigned expected_size, int without) {
+    ExpectCountsAfterIteration(it, expected_size);
     EXPECT_TRUE(visited.find(without) == end(visited));
   }
 
   template<typename DIR>
-  void assert_iteration_correct(El *start, size_t max_len = 2 * N) {
+  void ExpectIterationCorrect(Element *start, size_t max_len = 2 * N) {
     unsigned len = 0;
-    for (auto cur = Iter<DIR>::all(start); *cur; ++cur) {
-      EXPECT_EQ(DIR::next(DIR::prev(*cur)), *cur);
-      EXPECT_EQ(DIR::prev(DIR::next(*cur)), *cur);
+    for (auto cur = Iter<DIR>::All(start); *cur; ++cur) {
+      EXPECT_EQ(DIR::Next(DIR::Prev(*cur)), *cur);
+      EXPECT_EQ(DIR::Prev(DIR::Next(*cur)), *cur);
       len++;
     }
 
@@ -68,11 +68,11 @@ class TestListMatrix : public ::testing::Test {
 };
 
 TEST_F(TestListMatrix, TwoElemsCircularListWhenAddedHorizontal) {
-  El el(0, 0);
+  Element el(0, 0);
   EXPECT_EQ(el.r, &el);
 
-  El el2(0, 0);
-  Manipulator<Horizontal>::insert(&el, &el2);
+  Element el2(0, 0);
+  Manipulator<Horizontal>::Insert(&el, &el2);
   EXPECT_EQ(el.r, &el2);
   EXPECT_EQ(el.l, &el2);
   EXPECT_EQ(el2.r, &el);
@@ -80,11 +80,11 @@ TEST_F(TestListMatrix, TwoElemsCircularListWhenAddedHorizontal) {
 }
 
 TEST_F(TestListMatrix, TwoElemsCircularListWhenAddedVertical) {
-  El el(0, 0);
+  Element el(0, 0);
   EXPECT_EQ(el.d, &el);
 
-  El el2(0, 0);
-  Manipulator<Vertical>::insert(&el, &el2);
+  Element el2(0, 0);
+  Manipulator<Vertical>::Insert(&el, &el2);
   EXPECT_EQ(el.d, &el2);
   EXPECT_EQ(el.u, &el2);
   EXPECT_EQ(el2.d, &el);
@@ -92,67 +92,67 @@ TEST_F(TestListMatrix, TwoElemsCircularListWhenAddedVertical) {
 }
 
 TEST_F(TestListMatrix, AllRequiredVisitedWehenIterateOverAll) {
-  auto it = Iter<Vertical>::all(els[0]);
-  expect_counts_after_iteration(it, N);
+  auto it = Iter<Vertical>::All(els[0]);
+  ExpectCountsAfterIteration(it, N);
 }
 
 TEST_F(TestListMatrix, AllRequiredVisitedWehenInvertedIterateOverAll) {
-  auto it = Iter<Invert<Vertical>>::all(els[0]);
-  expect_counts_after_iteration(it, N);
+  auto it = Iter<Invert<Vertical>>::All(els[0]);
+  ExpectCountsAfterIteration(it, N);
 }
 
 TEST_F(TestListMatrix, AllRequiredVisitedWehenIterateAllButMe) {
-  auto it = Iter<Vertical>::all_but_me(els[0]);
-  expect_counts_after_iteration_without(it, N - 1, 0);
+  auto it = Iter<Vertical>::AllButMe(els[0]);
+  ExpectCountsAfterIterationWithout(it, N - 1, 0);
 }
 
 TEST_F(TestListMatrix, AllRequiredVisitedWehenInvertIterateAllButMe) {
-  auto it = Iter<Invert<Vertical>>::all_but_me(els[0]);
-  expect_counts_after_iteration_without(it, N - 1, 0);
+  auto it = Iter<Invert<Vertical>>::AllButMe(els[0]);
+  ExpectCountsAfterIterationWithout(it, N - 1, 0);
 }
 
 TEST_F(TestListMatrix, ListContainsOnlyOtherWhenFirstRemoved) {
-  Manipulator<Vertical>::remove(els[0]);
-  assert_iteration_correct<Vertical>(els[1]);
-  auto it = Iter<Vertical>::all(els[1]);
-  expect_counts_after_iteration_without(it, N - 1, 0);
+  Manipulator<Vertical>::Remove(els[0]);
+  ExpectIterationCorrect<Vertical>(els[1]);
+  auto it = Iter<Vertical>::All(els[1]);
+  ExpectCountsAfterIterationWithout(it, N - 1, 0);
 }
 
 TEST_F(TestListMatrix, ListContainsOnlyOtherWhenSecondRemoved) {
-  Manipulator<Vertical>::remove(els[1]);
-  assert_iteration_correct<Vertical>(els[0]);
-  auto it = Iter<Vertical>::all(els[0]);
-  expect_counts_after_iteration_without(it, N - 1, 1);
+  Manipulator<Vertical>::Remove(els[1]);
+  ExpectIterationCorrect<Vertical>(els[0]);
+  auto it = Iter<Vertical>::All(els[0]);
+  ExpectCountsAfterIterationWithout(it, N - 1, 1);
 }
 
 TEST_F(TestListMatrix, ListContainsOnlyOtherWhenLastRemoved) {
-  Manipulator<Vertical>::remove(els[N - 1]);
+  Manipulator<Vertical>::Remove(els[N - 1]);
 
-  assert_iteration_correct<Vertical>(els[0]);
-  auto it = Iter<Vertical>::all(els[0]);
-  expect_counts_after_iteration_without(it, N - 1, 9);
+  ExpectIterationCorrect<Vertical>(els[0]);
+  auto it = Iter<Vertical>::All(els[0]);
+  ExpectCountsAfterIterationWithout(it, N - 1, 9);
 }
 
 TEST_F(TestListMatrix, ListContainsOnlyOtherWhenTwoRemoved) {
-  Manipulator<Vertical>::remove(els[0]);
-  Manipulator<Vertical>::remove(els[1]);
+  Manipulator<Vertical>::Remove(els[0]);
+  Manipulator<Vertical>::Remove(els[1]);
 
-  assert_iteration_correct<Vertical>(els[2]);
+  ExpectIterationCorrect<Vertical>(els[2]);
 
-  auto it = Iter<Vertical>::all(els[2]);
-  expect_counts_after_iteration(it, N - 2);
+  auto it = Iter<Vertical>::All(els[2]);
+  ExpectCountsAfterIteration(it, N - 2);
   EXPECT_TRUE(visited.find(0) == end(visited));
   EXPECT_TRUE(visited.find(1) == end(visited));
 }
 
 TEST_F(TestListMatrix, ListContainsOnlyValidWhenTwoRemovedOneReinsertedInFIFOOrder) {
-  Manipulator<Vertical>::remove(els[0]);
-  Manipulator<Vertical>::remove(els[1]);
-  Manipulator<Vertical>::reinsert(els[1]);
+  Manipulator<Vertical>::Remove(els[0]);
+  Manipulator<Vertical>::Remove(els[1]);
+  Manipulator<Vertical>::Reinsert(els[1]);
 
-  assert_iteration_correct<Vertical>(els[2]);
+  ExpectIterationCorrect<Vertical>(els[2]);
 
-  auto it = Iter<Vertical>::all(els[2]);
-  expect_counts_after_iteration(it, N - 1);
+  auto it = Iter<Vertical>::All(els[2]);
+  ExpectCountsAfterIteration(it, N - 1);
   EXPECT_TRUE(visited.find(0) == end(visited));
 }
