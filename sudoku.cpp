@@ -60,7 +60,7 @@ vector<std::string> examples = {
 
 };
 
-struct SudokuBoard {
+struct SudokuBoard final {
 
   std::vector<int> vals;
   std::vector<bool> predefined;
@@ -70,7 +70,7 @@ struct SudokuBoard {
     predefined.reserve(9 * 9);
 
     for (unsigned i = 0; example[i]; i++) {
-      if (example[i] != '.' && (example[i] < '0' || example[i] > '9')) continue;
+      if (example[i] != '.' && !std::isdigit(example[i])) continue;
       vals.push_back(example[i] == '.' ? -1 : example[i] - '1');
       predefined.push_back(vals.back() != -1);
     }
@@ -107,7 +107,7 @@ struct SudokuBoard {
   }
 };
 
-class SudokuMapper {
+class SudokuMapper final {
  public:
 
   SudokuMapper(std::shared_ptr<SudokuBoard> board) : board(board) {
@@ -243,4 +243,3 @@ int main() {
   cout << "Done" << endl;
 
 }
-

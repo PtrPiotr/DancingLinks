@@ -30,6 +30,7 @@ SOFTWARE.
 #include <cassert>
 #include <cmath>
 
+
 //#include <experimental/memory_resource>
 
 namespace DancingLinks {
@@ -56,6 +57,7 @@ class Alloc {
 
 struct Element {
   int rowId, colId;
+  // pointers up, down, left, right of the grid matrix.
   Element *u, *d, *l, *r;
 
   Element(int rowId, int colId) :
@@ -166,7 +168,7 @@ class Iter {
   }
 };
 
-class DLSolver {
+class DLSolver final {
  public:
   DLSolver(const DLSolver&) = delete;
   DLSolver& operator=(const DLSolver&) = delete;
@@ -177,10 +179,7 @@ class DLSolver {
    * @param n_cols number of columns
    */
   DLSolver(unsigned n_rows, unsigned n_cols)
-      : n_rows(n_rows), n_cols(n_cols) {
-    rows = new Element *[n_rows];
-    cols = new Header *[n_cols];
-
+      : n_rows(n_rows), n_cols(n_cols), rows(n_rows), cols(n_cols)   {
     solution.assign(n_rows, 0);
 
     for (unsigned i = 0; i < n_rows; i++) {
@@ -195,11 +194,6 @@ class DLSolver {
       cols[i] = header_alloc.Allocate(-1, i);
       Manipulator<Horizontal>::Insert(root, cols[i]);
     }
-  }
-
-  virtual ~DLSolver() {
-    delete[] rows;
-    delete[] cols;
   }
 
   /**
@@ -254,8 +248,8 @@ class DLSolver {
   size_t n_rows, n_cols;
 
   Header *root;
-  Header **cols;
-  Element **rows;
+  std::vector<Element*> rows;
+  std::vector<Header*> cols;
 
   std::vector<int> solution;
 
