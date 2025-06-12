@@ -34,17 +34,19 @@ SOFTWARE.
 
 namespace DancingLinks {
 
-namespace Internal {
+  namespace Internal
+  {
+    const int HEADER_ROOT = -10;
 
 struct Element {
   int rowId, colId;
   // pointers up, down, left, right of the grid matrix.
   Element *u, *d, *l, *r;
 
+
   Element(int rowId, int colId) :
       rowId(rowId), colId(colId),
       u(this), d(this), l(this), r(this) {
-
   }
 };
 
