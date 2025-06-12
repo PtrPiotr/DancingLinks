@@ -30,30 +30,11 @@ SOFTWARE.
 #include <cassert>
 #include <cmath>
 
-
-//#include <experimental/memory_resource>
+#include <memory_resource>
 
 namespace DancingLinks {
 
 namespace Internal {
-template<typename T>
-class Alloc {
- public:
-  virtual ~Alloc() {
-    for (auto e: allocs) {
-      delete e;
-    }
-  }
-
-  template<typename... Args>
-  T *Allocate(Args &&... args) {
-    allocs.emplace_back(new T(std::forward<Args>(args)...));
-    return allocs.back();
-  }
-
- private:
-  std::vector<T *> allocs;
-};
 
 struct Element {
   int rowId, colId;
@@ -179,19 +160,22 @@ class DLSolver final {
    * @param n_cols number of columns
    */
   DLSolver(unsigned n_rows, unsigned n_cols)
-      : n_rows(n_rows), n_cols(n_cols), rows(n_rows), cols(n_cols)   {
+      : n_rows(n_rows), n_cols(n_cols), rows(n_rows), cols(n_cols),
+        el_alloc(&memory_resource), header_alloc(&memory_resource) {
     solution.assign(n_rows, 0);
 
     for (unsigned i = 0; i < n_rows; i++) {
       rows[i] = nullptr;
     }
 
-    root = header_alloc.Allocate(-10, -10);
+    root = header_alloc.allocate(1);
+    new(root) Header(-10, -10);
     root->d = nullptr;
     root->u = nullptr;
 
     for (int i = (int) n_cols - 1; i >= 0; i--) {
-      cols[i] = header_alloc.Allocate(-1, i);
+      cols[i] = header_alloc.allocate(1);
+      new(cols[i]) Header(-1, i);
       Manipulator<Horizontal>::Insert(root, cols[i]);
     }
   }
@@ -203,7 +187,8 @@ class DLSolver final {
    */
   void Add(unsigned rowId, unsigned colId) {
     assert(rowId < n_rows && colId < n_cols);
-    Element *me = el_alloc.Allocate((int) rowId, (int) colId);
+    Element *me = el_alloc.allocate(1);
+    new(me) Element((int) rowId, (int) colId);
 
     Manipulator<Vertical>::Insert(cols[colId], me);
     cols[colId]->count++;
@@ -253,9 +238,9 @@ class DLSolver final {
 
   std::vector<int> solution;
 
-  //std::experimental::fundamentals_v2::pmr::monotonic_buffer_resource
-  Alloc<Element> el_alloc;
-  Alloc<Header> header_alloc;
+  std::pmr::monotonic_buffer_resource memory_resource;
+  std::pmr::polymorphic_allocator<Element> el_alloc;
+  std::pmr::polymorphic_allocator<Header> header_alloc;
 
   void Cover(Header *head) {
     Manipulator<Horizontal>::Remove(head);
