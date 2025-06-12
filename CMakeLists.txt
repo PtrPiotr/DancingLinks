@@ -12,7 +12,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Main executable
-add_executable(sudoku dancing_links.hpp sudoku.cpp)
+add_executable(sudoku dancing_links.hpp sudoku.cpp sudoku_main.cpp)
 target_compile_options(sudoku PRIVATE -Wall)
 
 # Tests
