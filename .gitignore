@@ -112,5 +112,6 @@ fabric.properties
 
 cmake-build-*
 
+build/
 release/
 debug/
