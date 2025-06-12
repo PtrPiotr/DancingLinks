@@ -101,13 +101,13 @@ TEST_F(TestDancingLinks, AllColumnsCoveredWhenRunOnSimpleExample) {
 TEST_F(TestDancingLinks, EmptySolutionWhenCantCoverColumn) {
     PopulateDl(impossible_column_3);
     auto solution = dl->Solve();
-    EXPECT_EQ(solution.size(), 0);
+    EXPECT_EQ(solution.size(), 0uz);
 }
 
 TEST_F(TestDancingLinks, EmptySolutionWhenAllRowsInConflict) {
     PopulateDl(no_feasible_subset);
     auto solution = dl->Solve();
-    EXPECT_EQ(solution.size(), 0);
+    EXPECT_EQ(solution.size(), 0uz);
 }
 
 

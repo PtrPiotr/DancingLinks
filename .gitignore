@@ -111,3 +111,6 @@ fabric.properties
 # End of https://www.gitignore.io/api/c++,cmake,intellij
 
 cmake-build-*
+
+release/
+debug/
