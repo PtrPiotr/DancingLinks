@@ -3,7 +3,6 @@
 //
 
 #include <bitset>
-#include <iostream>
 
 #include <gtest/gtest.h>
 

@@ -27,7 +27,6 @@ SOFTWARE.
 
 #include <cassert>
 #include <cmath>
-#include <sstream>
 #include <vector>
 
 #include <memory_resource>
