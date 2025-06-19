@@ -11,7 +11,7 @@ using namespace DancingLinks;
 using namespace DancingLinks::Internal;
 
 class TestListMatrix : public ::testing::Test {
- protected:
+protected:
   // DLSolver *dl;
   static const unsigned N = 10;
   Element *els[N];
@@ -24,37 +24,36 @@ class TestListMatrix : public ::testing::Test {
       els[i] = new Element(i, 0);
       Manipulator<Vertical>::Insert(els[0], els[i]);
     }
-
   }
 
   virtual void TearDown() {
-    for (auto el: els) {
+    for (auto el : els) {
       delete el;
     }
 
     visited.clear();
   }
 
-  template<typename T>
-  void VisitWithIter(Iter<T> it) {
+  template <typename T> void VisitWithIter(Iter<T> it) {
     for (; *it; ++it) {
       visited.insert((*it)->rowId);
     }
   }
 
-  template<typename T>
+  template <typename T>
   void ExpectCountsAfterIteration(T it, unsigned expected_size) {
     VisitWithIter(it);
     EXPECT_EQ(visited.size(), expected_size);
   }
 
-  template<typename T>
-  void ExpectCountsAfterIterationWithout(T it, unsigned expected_size, int without) {
+  template <typename T>
+  void ExpectCountsAfterIterationWithout(T it, unsigned expected_size,
+                                         int without) {
     ExpectCountsAfterIteration(it, expected_size);
     EXPECT_TRUE(visited.find(without) == end(visited));
   }
 
-  template<typename DIR>
+  template <typename DIR>
   void ExpectIterationCorrect(Element *start, size_t max_len = 2 * N) {
     unsigned len = 0;
     for (auto cur = Iter<DIR>::All(start); *cur; ++cur) {
@@ -145,7 +144,8 @@ TEST_F(TestListMatrix, ListContainsOnlyOtherWhenTwoRemoved) {
   EXPECT_TRUE(visited.find(1) == end(visited));
 }
 
-TEST_F(TestListMatrix, ListContainsOnlyValidWhenTwoRemovedOneReinsertedInFIFOOrder) {
+TEST_F(TestListMatrix,
+       ListContainsOnlyValidWhenTwoRemovedOneReinsertedInFIFOOrder) {
   Manipulator<Vertical>::Remove(els[0]);
   Manipulator<Vertical>::Remove(els[1]);
   Manipulator<Vertical>::Reinsert(els[1]);

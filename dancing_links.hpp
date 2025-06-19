@@ -25,38 +25,31 @@ SOFTWARE.
 #ifndef DANCING_LINKS_HPP_
 #define DANCING_LINKS_HPP_
 
-#include <vector>
-#include <sstream>
 #include <cassert>
 #include <cmath>
+#include <sstream>
+#include <vector>
 
 #include <memory_resource>
 
 namespace DancingLinks {
 
-  namespace Internal
-  {
-    const int HEADER_ROOT = -10;
+namespace Internal {
+const int HEADER_ROOT = -10;
 
 struct Element {
   int rowId, colId;
   // pointers up, down, left, right of the grid matrix.
   Element *u, *d, *l, *r;
 
-
-  Element(int rowId, int colId) :
-      rowId(rowId), colId(colId),
-      u(this), d(this), l(this), r(this) {
-  }
+  Element(int rowId, int colId)
+      : rowId(rowId), colId(colId), u(this), d(this), l(this), r(this) {}
 };
 
 struct Header : public Element {
   long count;
 
-  Header(int rowId, int colId) :
-      Element(rowId, colId), count(0) {
-
-  }
+  Header(int rowId, int colId) : Element(rowId, colId), count(0) {}
 };
 
 struct Horizontal {
@@ -79,8 +72,7 @@ struct Vertical {
   static Element **PrevP(Element *in) { return &in->u; }
 };
 
-template<typename HV>
-struct Invert {
+template <typename HV> struct Invert {
   static Element *Next(Element *in) { return HV::Prev(in); }
 
   static Element **NextP(Element *in) { return HV::Prevp(in); }
@@ -90,8 +82,7 @@ struct Invert {
   static Element **PrevP(Element *in) { return HV::Nextp(in); }
 };
 
-template<typename DIR>
-struct Manipulator {
+template <typename DIR> struct Manipulator {
   static void Insert(Element *after, Element *what) {
     *DIR::NextP(what) = DIR::Next(after);
     *DIR::PrevP(what) = after;
@@ -111,23 +102,18 @@ struct Manipulator {
   }
 };
 
-template<typename DIR>
-class Iter {
+template <typename DIR> class Iter {
 
- public:
-  static Iter AllButMe(Element *me) {
-    return Iter<DIR> {DIR::Next(me), me};
-  }
+public:
+  static Iter AllButMe(Element *me) { return Iter<DIR>{DIR::Next(me), me}; }
 
-  static Iter All(Element *me) {
-    return Iter<DIR> {me, nullptr};
-  }
+  static Iter All(Element *me) { return Iter<DIR>{me, nullptr}; }
 
   Iter<DIR> &operator++() {
-    if (end == nullptr)  {
-        end = cur;
+    if (end == nullptr) {
+      end = cur;
     } else if (cur == end) {
-        return *this;
+      return *this;
     }
 
     cur = DIR::Next(cur);
@@ -136,23 +122,22 @@ class Iter {
   }
 
   Element *operator*() {
-    if (cur == end) return nullptr;
+    if (cur == end)
+      return nullptr;
     return cur;
   }
 
- private:
+private:
   Element *cur;
   Element *end;
 
-  Iter(Element *cur, Element *end) : cur(cur), end(end) {
-
-  }
+  Iter(Element *cur, Element *end) : cur(cur), end(end) {}
 };
 
 class DLSolver final {
- public:
-  DLSolver(const DLSolver&) = delete;
-  DLSolver& operator=(const DLSolver&) = delete;
+public:
+  DLSolver(const DLSolver &) = delete;
+  DLSolver &operator=(const DLSolver &) = delete;
 
   /***
    * Instance of the solver.
@@ -169,13 +154,13 @@ class DLSolver final {
     }
 
     root = header_alloc.allocate(1);
-    new(root) Header(-10, -10);
+    new (root) Header(-10, -10);
     root->d = nullptr;
     root->u = nullptr;
 
-    for (int i = (int) n_cols - 1; i >= 0; i--) {
+    for (int i = (int)n_cols - 1; i >= 0; i--) {
       cols[i] = header_alloc.allocate(1);
-      new(cols[i]) Header(-1, i);
+      new (cols[i]) Header(-1, i);
       Manipulator<Horizontal>::Insert(root, cols[i]);
     }
   }
@@ -188,7 +173,7 @@ class DLSolver final {
   void Add(unsigned rowId, unsigned colId) {
     assert(rowId < n_rows && colId < n_cols);
     Element *me = el_alloc.allocate(1);
-    new(me) Element((int) rowId, (int) colId);
+    new (me) Element((int)rowId, (int)colId);
 
     Manipulator<Vertical>::Insert(cols[colId], me);
     cols[colId]->count++;
@@ -200,10 +185,10 @@ class DLSolver final {
     }
   }
 
-
   /**
-   * Delete given row from the Algorithm X matrix. This is useful if you create generic instance
-   * if the problem first, and than adjust it by marking few positions as impossible.
+   * Delete given row from the Algorithm X matrix. This is useful if you create
+   * generic instance if the problem first, and than adjust it by marking few
+   * positions as impossible.
    * @param row_id id of the row to remove
    */
   void DeleteRow(unsigned row_id) {
@@ -220,21 +205,20 @@ class DLSolver final {
 
   /**
    * Solve this instance.
-   * @return vector containing ids of rows included in the solution. RowId are consistant
-   * with ids provided in  "add" and "delete" methods.
+   * @return vector containing ids of rows included in the solution. RowId are
+   * consistant with ids provided in  "add" and "delete" methods.
    */
   std::vector<int> Solve() {
     int ret = Solve(0);
     return std::vector<int>(begin(solution), begin(solution) + ret);
   }
 
- protected:
-
+protected:
   size_t n_rows, n_cols;
 
   Header *root;
-  std::vector<Element*> rows;
-  std::vector<Header*> cols;
+  std::vector<Element *> rows;
+  std::vector<Header *> cols;
 
   std::vector<int> solution;
 
@@ -282,7 +266,7 @@ class DLSolver final {
   Header *GetSmallColumn() {
     Header *ret = nullptr;
     for (auto it = Iter<Invert<Horizontal>>::AllButMe(root); *it; ++it) {
-      Header *h = (Header *) *it;
+      Header *h = (Header *)*it;
       if (ret == nullptr || h->count < ret->count) {
         ret = h;
       }
@@ -308,7 +292,8 @@ class DLSolver final {
       CoverRow(*row);
 
       unsigned solved = Solve(step + 1);
-      if (solved != 0) return solved;
+      if (solved != 0)
+        return solved;
 
       UncoverRow(*row);
       solution[step] = -1;
@@ -319,9 +304,9 @@ class DLSolver final {
   }
 };
 
-}
+} // namespace Internal
 
 using Internal::DLSolver;
-}
+} // namespace DancingLinks
 
 #endif
