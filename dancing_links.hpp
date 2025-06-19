@@ -116,37 +116,35 @@ class Iter {
 
  public:
   static Iter AllButMe(Element *me) {
-    return Iter<DIR> {DIR::Next(me), me, true};
+    return Iter<DIR> {DIR::Next(me), me};
   }
 
   static Iter All(Element *me) {
-    return Iter<DIR> {me, me, false};
+    return Iter<DIR> {me, nullptr};
   }
 
   Iter<DIR> &operator++() {
-    if (started && cur == end) return *this;
-    started = true;
+    if (end == nullptr)  {
+        end = cur;
+    } else if (cur == end) {
+        return *this;
+    }
+
     cur = DIR::Next(cur);
+
     return *this;
   }
 
-  Iter<DIR> &operator++(int q)  {
-    Iter<DIR> pom = *this;
-    ++(*this);
-    return pom;
-  }
-
   Element *operator*() {
-    if (started && cur == end) return nullptr;
+    if (cur == end) return nullptr;
     return cur;
   }
 
  private:
   Element *cur;
   Element *end;
-  bool started;
 
-  Iter(Element *cur, Element *end, bool started) : cur(cur), end(end), started(started) {
+  Iter(Element *cur, Element *end) : cur(cur), end(end) {
 
   }
 };
