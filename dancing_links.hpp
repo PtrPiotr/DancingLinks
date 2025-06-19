@@ -283,7 +283,7 @@ class DLSolver final {
 
   Header *GetSmallColumn() {
     Header *ret = nullptr;
-    for (auto it = Iter<Horizontal>::AllButMe(root); *it; ++it) {
+    for (auto it = Iter<Invert<Horizontal>>::AllButMe(root); *it; ++it) {
       Header *h = (Header *) *it;
       if (ret == nullptr || h->count < ret->count) {
         ret = h;
