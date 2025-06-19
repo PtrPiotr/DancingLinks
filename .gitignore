@@ -110,6 +110,10 @@ fabric.properties
 
 # End of https://www.gitignore.io/api/c++,cmake,intellij
 
+.cache
+.vscode
+.zed
+
 cmake-build-*
 
 build/
